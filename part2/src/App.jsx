@@ -1,12 +1,24 @@
+const Course = (props) => {
+  const courses = props
+  console.log(courses)
+  return (
+  <div>
+    <Header course={courses}/>
+    <Content course={courses}/>
+    <Total course={courses}/>
+  </div>
+  )
+}
 const Header = (props) =>{
+  console.log(props.course.course.name)
   return(
-    <h1>{props.course.name}</h1>
+    <h1>{props.course.course.name}</h1>
   )
 }
 
 const Content = (props) =>{
-  console.log(props.course.parts)
-  const parts=props.course.parts
+  console.log(props.course.course.parts)
+  const parts=props.course.course.parts
   return(
     <>
     {parts.map(part =>
@@ -17,13 +29,18 @@ const Content = (props) =>{
   )
 }
 const Total = (props) =>{
-  const parts = props.course.parts
+  const parts = props.course.course.parts
   console.log(parts)
-  const sum = parts.map(exercises=>exercises)
-  console.log(sum)
+  const sumArray = parts.map((exercise) => exercise.exercises)
+  console.log(sumArray)
+  const initialValue = 0;
+  const sumWithInitial = sumArray.reduce(
+  (accumulator, currentValue) => accumulator + currentValue,
+  initialValue,
+);
   return(
 
-    <p>Number of exercises {props.course.parts[0].exercises + props.course.parts[1].exercises + props.course.parts[2].exercises}</p>
+    <p>Number of exercises {sumWithInitial}</p>
   )
 }
 const Part = (props) =>{
@@ -32,7 +49,7 @@ const Part = (props) =>{
   )
 }
 const App = () =>{
-const course =
+const courses =
 { 
   name: "Half Stack application development",
   id:1,
@@ -51,6 +68,11 @@ const course =
       name: 'State of a component', 
       exercises: 14,
       id: 3
+    },
+    {
+      name: 'Redux', 
+      exercises: 11,
+      id: 4
     }
   ]
 }
@@ -60,9 +82,7 @@ const course =
 
 return(
   <div>
-    <Header course={course} />
-    <Content course={course}/>
-    <Total course={course} />
+    <Course key={courses.id} course={courses} />
   </div>
  
 )
