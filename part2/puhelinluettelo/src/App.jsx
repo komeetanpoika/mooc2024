@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
 const Person = (props) => {
   return(
 
@@ -7,17 +9,79 @@ const Person = (props) => {
 </>
   )
 }
+const Persons = (props) => {
+  const persons = props.persons
+  console.log(persons)
+  return (
+    <ul>
+    {persons.map(person =>
+      <li key={person.name}>
+        <Person 
+        name={person.name} 
+        number={person.number} 
+        />
+        </li>
+
+    )}
+    </ul>
+  )
+}
+const PersonForm = ({addPerson, newName, setPersons, handleNumberChange, handleNameChange, newNumber}) => {
+
+  return (
+    <form onSubmit= {(event)=>{
+      addPerson(event)
+
+      }}>
+    <div>
+      name: <input 
+      value={newName}
+      onChange={handleNameChange}
+      />
+    </div>
+    <div>
+      number: <input
+      value={newNumber}
+      onChange={handleNumberChange}
+      />
+    </div>
+    <div>
+      <button type="submit">add</button>
+    </div>
+  </form>
+  )
+}
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [filter, setFilter] = useState(' ')
-  const addPerson = (event) => {
+  
+  const hook = () => {
+    console.log('effect')
+    axios.get('http://localhost:3001/persons')
+    .then(response => {
+      console.log('promise fulfilled')
+      setPersons(response.data)
+    })
+  }
+
+  
+  useEffect(hook, []) 
+ 
+  function handleNameChange (event) {
+    setNewName(event.target.value)
+    console.log(newNumber)
+  }
+  function handleNumberChange (event){
+    setNewNumber(event.target.value)
+    console.log(newNumber)
+  }
+  const resetFields = () => {
+    setNewName('')
+    setNewNumber('')
+    
+  }
+  function addPerson(event) {
     event.preventDefault()
     const testArray = [...persons.map(person => person.name)]
     console.log(testArray.includes(newName))
@@ -26,23 +90,18 @@ const App = () => {
       number: newNumber
     }
     if(testArray.includes(newName) === false){
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+      setPersons(persons.concat(personObject))
+      resetFields()
+      console.log(newNumber)
     }
     if(testArray.includes(newName)){
       alert(newName +' is already on the list')
     }
+    console.log(newNumber)
   }
-  const filterNumbers = (props) => {
+  const [filter, setFilter] = useState(' ')
 
-  }
-  function handleNameChange (event) {
-    setNewName(event.target.value)
-  }
-  function handleNumberChange (event){
-    setNewNumber(event.target.value)
-  }
+
   function handleFilterChange (event){
     console.log(event.target.value)
     const newFilter = (event.target.value)
@@ -61,35 +120,19 @@ const App = () => {
           />
         </div>
       <h2>add a new</h2>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input 
-          value={newName}
-          onChange={handleNameChange}
-          />
-        </div>
-        <div>
-          number: <input
-          value={newNumber}
-          onChange={handleNumberChange}
-          />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+        <PersonForm 
+        addPerson={addPerson} 
+        dudes={persons} 
+        newName={newName} 
+        setPersons={setPersons} 
+        setNewName={setNewName} 
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        setNewNumber={setNewNumber}
+        newNumber={newNumber}
+        />
       <h2>Numbers</h2>
-      <ul>
-      {persons.map(person =>
-        <li key={person.name}>
-          <Person 
-          name={person.name} 
-          number={person.number} 
-          />
-          </li>
-
-      )}
-      </ul>
+        <Persons persons={persons} />
     </div>
   )
 
