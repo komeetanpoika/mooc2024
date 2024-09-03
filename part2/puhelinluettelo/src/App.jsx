@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import personService from './services/persons'
 
+const RemoveButton = (props) => {
+  return(
+    <button onClick={()=>(props.removePerson(props.id))}>remove {props.id}</button>
+  )
+}
 const Person = (props) => {
   return(
-
 <>
-  {props.name} {props.number}
+  {props.name} {props.number} <RemoveButton id={props.id} removePerson={props.removePerson}/>
 </>
   )
 }
@@ -18,7 +23,9 @@ const Persons = (props) => {
       <li key={person.name}>
         <Person 
         name={person.name} 
-        number={person.number} 
+        number={person.number}
+        id={person.id}
+        removePerson={()=>props.removePerson(person.id)} 
         />
         </li>
 
@@ -26,7 +33,7 @@ const Persons = (props) => {
     </ul>
   )
 }
-const PersonForm = ({addPerson, newName, setPersons, handleNumberChange, handleNameChange, newNumber}) => {
+const PersonForm = ({addPerson, newName, handleNumberChange, handleNameChange, newNumber}) => {
 
   return (
     <form onSubmit= {(event)=>{
@@ -56,17 +63,16 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   
-  const hook = () => {
-    console.log('effect')
-    axios.get('http://localhost:3001/persons')
-    .then(response => {
-      console.log('promise fulfilled')
-      setPersons(response.data)
-    })
-  }
+
 
   
-  useEffect(hook, []) 
+  useEffect(()=> {
+    personService
+    .getAll()
+    .then(initialPersons => {
+      setPersons(initialPersons)
+    })
+  }, []) 
  
   function handleNameChange (event) {
     setNewName(event.target.value)
@@ -84,13 +90,16 @@ const App = () => {
   function addPerson(event) {
     event.preventDefault()
     const testArray = [...persons.map(person => person.name)]
-    console.log(testArray.includes(newName))
     const personObject = {
       name: newName,
       number: newNumber
     }
     if(testArray.includes(newName) === false){
-      setPersons(persons.concat(personObject))
+      personService
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+      })
       resetFields()
       console.log(newNumber)
     }
@@ -98,6 +107,18 @@ const App = () => {
       alert(newName +' is already on the list')
     }
     console.log(newNumber)
+  }
+  const removePerson= (id) => {
+    if(window.confirm(`delete ${id} ?`)== true){
+      console.log('you pressed OK')
+      personService
+      .removeFromDatabase(id)
+      personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
+    })  
+    }
   }
   const [filter, setFilter] = useState(' ')
 
@@ -132,7 +153,7 @@ const App = () => {
         newNumber={newNumber}
         />
       <h2>Numbers</h2>
-        <Persons persons={persons} />
+        <Persons persons={persons} removePerson={removePerson} />
     </div>
   )
 
