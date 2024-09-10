@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import personService from './services/persons'
+import Notification from './components/Notification'
+import './index.css'
 
 const RemoveButton = (props) => {
   return(
@@ -62,7 +64,7 @@ const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  
+  const [noteMessage, setNoteMessage] = useState('')
 
 
   
@@ -101,10 +103,17 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
       })
       resetFields()
+      setNoteMessage('Added ' + newName)
+      setTimeout (()=>{
+        setNoteMessage(null)
+      }, 2000)
       console.log(newNumber)
     }
     if(testArray.includes(newName)){
-      alert(newName +' is already on the list')
+      setNoteMessage(newName +' is already on the list')
+      setTimeout (()=>{
+        setNoteMessage(null)
+      }, 2000)
     }
     console.log(newNumber)
   }
@@ -117,6 +126,10 @@ const App = () => {
       .getAll()
       .then(initialPersons => {
         setPersons(initialPersons)
+        setNoteMessage(newName +' succesfully removed from database')
+      setTimeout (()=>{
+        setNoteMessage(null)
+      }, 2000)
     })  
     }
   }
@@ -134,6 +147,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={noteMessage} />
         <div>
           filter shown <input
           value={filter}
